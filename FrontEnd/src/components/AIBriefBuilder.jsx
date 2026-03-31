@@ -10,15 +10,36 @@ export default function AIBriefBuilder() {
   const [aiResponse, setAiResponse] = useState(null);
   const pdfRef = useRef();
 
-  const [formData, setFormData] = useState({ clientName: '', budget: '', objective: '', preferences: '' });
+  const [formData, setFormData] = useState({
+    clientName: '',
+    industry: '',
+    website: '',
+    competitors: '',
+    objective: '',
+    targetAudience: '',
+    budget: '',
+    tone: '',
+    imageryStyle: '',
+    colorDirection: '',
+    dos: '',
+    donts: ''
+  });
+
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const submitToAI = async () => {
     setLoading(true);
+    // Jab backend ready hoga, hum yahan 'http://localhost:5000/api/generate' call karenge
     setTimeout(() => {
       setAiResponse({
         title: `${formData.clientName} - AI Strategic Campaign Brief`,
         headlines: ["Ignite Your Brand's Potential", "Smart Advertising, Real Results", "Connect with Your Audience Today"],
+        toneGuide: "Professional, engaging, and forward-thinking.",
+        channels: [
+            {"name": "Instagram", "percentage": 40},
+            {"name": "Google Ads", "percentage": 35},
+            {"name": "YouTube", "percentage": 25}
+        ],
         visual: "A high-contrast cinematic shot showing a diverse group of young professionals interacting with a glowing digital interface, representing forward-thinking technology."
       });
       setLoading(false);
@@ -44,110 +65,190 @@ export default function AIBriefBuilder() {
         <Sparkles className="text-purple-500" size={32} />
         <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">AI Brief Generator</h2>
       </div>
-      
-      {/* Premium Step Indicator */}
+
+      {/* Step Indicator */}
       <div className="flex items-center justify-between mb-12 relative">
         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-100 dark:bg-slate-800 z-0"></div>
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-blue-500 to-purple-500 z-0 transition-all duration-500" style={{ width: `${Math.min(((step - 1) / 3) * 100, 100)}%` }}></div>
-        
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-blue-500 to-purple-500 z-0 transition-all duration-500"
+          style={{ width: `${Math.min(((step - 1) / 3) * 100, 100)}%` }}></div>
         {[1, 2, 3, 4].map((s) => (
-          <div key={s} className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm transition-all duration-300 ${step >= s ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-purple-500/30' : 'bg-white dark:bg-slate-800 text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}>
+          <div key={s} className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm transition-all duration-300 ${step >= s ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-white dark:bg-slate-800 text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}>
             {step > s ? <CheckCircle2 size={20} /> : s}
           </div>
         ))}
       </div>
 
-      {/* Form Steps */}
-      <div className="min-h-[250px]">
+      <div className="min-h-[300px]">
+
+        {/* STEP 1 — Client Details (COMPLETE) */}
         {step === 1 && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Client / Brand Name</label>
-              <input type="text" name="clientName" value={formData.clientName} onChange={handleChange} className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all" placeholder="e.g. Lumiere Cosmetics" />
-            </div>
-            <button onClick={() => setStep(2)} disabled={!formData.clientName} className="w-full sm:w-auto px-8 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl hover:shadow-lg disabled:opacity-50 transition-all">Next Step &rarr;</button>
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Client Details</h3>
+            {[
+              { label: 'Client / Brand Name', name: 'clientName', placeholder: 'e.g. Lumiere Cosmetics' },
+              { label: 'Industry', name: 'industry', placeholder: 'e.g. Beauty & Skincare' },
+              { label: 'Website URL', name: 'website', placeholder: 'e.g. https://lumiere.com' },
+              { label: 'Key Competitors', name: 'competitors', placeholder: 'e.g. L\'Oreal, Olay, Neutrogena' },
+            ].map(field => (
+              <div key={field.name}>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{field.label}</label>
+                <input type="text" name={field.name} value={formData[field.name]} onChange={handleChange}
+                  className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all"
+                  placeholder={field.placeholder} />
+              </div>
+            ))}
+            <button onClick={() => setStep(2)} disabled={!formData.clientName || !formData.industry}
+              className="mt-4 px-8 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl disabled:opacity-50 transition-all">
+              Next Step →
+            </button>
           </div>
         )}
 
+        {/* STEP 2 — Campaign Objective (COMPLETE) */}
         {step === 2 && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Campaign Objective</h3>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Objective</label>
+              <select name="objective" value={formData.objective} onChange={handleChange}
+                className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all">
+                <option value="">Select Objective</option>
+                <option value="Awareness">Brand Awareness</option>
+                <option value="Consideration">Consideration / Traffic</option>
+                <option value="Conversion">Conversion / Sales</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Target Audience</label>
+              <input type="text" name="targetAudience" value={formData.targetAudience} onChange={handleChange}
+                className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                placeholder="e.g. Women 25-35, urban, health-conscious" />
+            </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Campaign Budget ($)</label>
-              <input type="text" name="budget" value={formData.budget} onChange={handleChange} className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all" placeholder="e.g. $50,000" />
+              <input type="text" name="budget" value={formData.budget} onChange={handleChange}
+                className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                placeholder="e.g. $50,000" />
             </div>
             <div className="flex gap-4">
-              <button onClick={() => setStep(1)} className="px-8 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">Back</button>
-              <button onClick={() => setStep(3)} className="px-8 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl shadow-lg transition-all">Next Step &rarr;</button>
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Creative Direction (Tone & Style)</label>
-              <textarea name="preferences" value={formData.preferences} onChange={handleChange} className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all" rows="4" placeholder="e.g. Modern, minimalist, focus on Gen-Z audience..."></textarea>
-            </div>
-            <div className="flex gap-4">
-              <button onClick={() => setStep(2)} className="px-8 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">Back</button>
-              <button onClick={() => setStep(4)} className="px-8 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl shadow-lg transition-all">Review Info</button>
-            </div>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-            <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Confirm Details</h3>
-              <div className="space-y-2 text-slate-600 dark:text-slate-400">
-                <p><strong className="text-slate-900 dark:text-white">Client:</strong> {formData.clientName}</p>
-                <p><strong className="text-slate-900 dark:text-white">Budget:</strong> {formData.budget}</p>
-                <p><strong className="text-slate-900 dark:text-white">Style:</strong> {formData.preferences}</p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <button onClick={() => setStep(3)} className="px-8 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-all">Edit</button>
-              <button onClick={submitToAI} disabled={loading} className="px-8 py-3.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl shadow-lg shadow-purple-500/30 flex items-center transition-all hover:scale-105">
-                {loading ? <Loader2 className="animate-spin mr-2" size={20} /> : <Sparkles className="mr-2" size={20} />}
-                {loading ? 'Analyzing with AI...' : 'Generate Magic'}
+              <button onClick={() => setStep(1)} className="px-8 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-all">Back</button>
+              <button onClick={() => setStep(3)} disabled={!formData.budget || !formData.objective || !formData.targetAudience}
+                className="px-8 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl disabled:opacity-50 transition-all">
+                Next Step →
               </button>
             </div>
           </div>
         )}
 
-        {step === 5 && aiResponse && (
-          <div className="animate-in zoom-in-95 duration-500">
-            {/* The Document to be exported - FIXED FOR HTML2CANVAS */}
-            <div 
-              ref={pdfRef} 
-              style={{ backgroundColor: '#ffffff', color: '#0f172a', padding: '40px', border: '1px solid #e2e8f0', borderRadius: '12px', marginBottom: '24px', fontFamily: 'serif' }}
-            >
-               <div style={{ borderBottom: '4px solid #0f172a', paddingBottom: '24px', marginBottom: '32px', textAlign: 'center' }}>
-                 <p style={{ fontSize: '14px', fontWeight: 'bold', letterSpacing: '2px', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>AdAgency Intelligence</p>
-                 <h1 style={{ fontSize: '36px', fontWeight: '800', margin: 0 }}>{aiResponse.title}</h1>
-               </div>
-               
-               <div style={{ marginBottom: '32px' }}>
-                 <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px', color: '#7e22ce', borderLeft: '4px solid #a855f7', paddingLeft: '12px' }}>Suggested Copy / Headlines</h3>
-                 <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
-                   {aiResponse.headlines.map((hl, i) => (
-                     <li key={i} style={{ fontSize: '18px', marginBottom: '12px', display: 'flex', alignItems: 'center' }}>
-                        <span style={{ color: '#22c55e', marginRight: '12px' }}>✓</span> "{hl}"
-                     </li>
-                   ))}
-                 </ul>
-               </div>
-
-               <div>
-                 <h3 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '16px', color: '#7e22ce', borderLeft: '4px solid #a855f7', paddingLeft: '12px' }}>Key Visual Direction</h3>
-                 <p style={{ fontSize: '18px', lineHeight: '1.6', backgroundColor: '#f8fafc', padding: '24px', borderRadius: '8px', border: '1px solid #f1f5f9', fontStyle: 'italic', margin: 0 }}>
-                   {aiResponse.visual}
-                 </p>
-               </div>
+        {/* STEP 3 — Creative Preferences (COMPLETE) */}
+        {step === 3 && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Creative Direction</h3>
+            {[
+              { label: 'Tone of Voice', name: 'tone', placeholder: 'e.g. Modern, playful, empowering' },
+              { label: 'Imagery Style', name: 'imageryStyle', placeholder: 'e.g. Minimalist product shots, lifestyle photography' },
+              { label: 'Color Direction', name: 'colorDirection', placeholder: 'e.g. Soft pastels, white and gold' },
+            ].map(field => (
+              <div key={field.name}>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{field.label}</label>
+                <input type="text" name={field.name} value={formData[field.name]} onChange={handleChange}
+                  className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                  placeholder={field.placeholder} />
+              </div>
+            ))}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Do's</label>
+              <textarea name="dos" value={formData.dos} onChange={handleChange} rows="2"
+                className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                placeholder="e.g. Use real skin textures, show diversity" />
             </div>
-            
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Don'ts</label>
+              <textarea name="donts" value={formData.donts} onChange={handleChange} rows="2"
+                className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                placeholder="e.g. No heavy filters, avoid competitor comparisons" />
+            </div>
+            <div className="flex gap-4">
+              <button onClick={() => setStep(2)} className="px-8 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-all">Back</button>
+              <button onClick={() => setStep(4)} className="px-8 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl transition-all">Review Info</button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4 — Review & Submit */}
+        {step === 4 && (
+          <div className="space-y-6">
+            <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Confirm Details</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-600 dark:text-slate-400 text-sm">
+                {[
+                  ['Client', formData.clientName], ['Industry', formData.industry],
+                  ['Website', formData.website], ['Competitors', formData.competitors],
+                  ['Objective', formData.objective], ['Target Audience', formData.targetAudience],
+                  ['Budget', formData.budget], ['Tone', formData.tone],
+                  ['Imagery', formData.imageryStyle], ['Colors', formData.colorDirection],
+                ].map(([label, value]) => value ? (
+                  <p key={label}><strong className="text-slate-900 dark:text-white">{label}:</strong> {value}</p>
+                ) : null)}
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <button onClick={() => setStep(3)} className="px-8 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-all">Edit</button>
+              <button onClick={submitToAI} disabled={loading}
+                className="px-8 py-3.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl shadow-lg flex items-center gap-2 hover:scale-105 transition-all disabled:opacity-70">
+                {loading ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
+                {loading ? 'AI Soch raha hai...' : 'Generate Magic'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 5 — AI Output */}
+        {step === 5 && aiResponse && (
+          <div>
+            <div ref={pdfRef} style={{ backgroundColor: '#ffffff', color: '#0f172a', padding: '40px', border: '1px solid #e2e8f0', borderRadius: '12px', marginBottom: '24px', fontFamily: 'serif' }}>
+              <div style={{ borderBottom: '4px solid #0f172a', paddingBottom: '24px', marginBottom: '32px', textAlign: 'center' }}>
+                <p style={{ fontSize: '14px', fontWeight: 'bold', letterSpacing: '2px', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>AdAgency Intelligence</p>
+                <h1 style={{ fontSize: '30px', fontWeight: '800', margin: 0 }}>{aiResponse.title}</h1>
+              </div>
+
+              <div style={{ marginBottom: '28px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#7e22ce', borderLeft: '4px solid #a855f7', paddingLeft: '12px' }}>Suggested Headlines</h3>
+                <ul style={{ listStyle: 'none', padding: 0 }}>
+                  {aiResponse.headlines?.map((hl, i) => (
+                    <li key={i} style={{ fontSize: '16px', marginBottom: '10px' }}>✓ "{hl}"</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div style={{ marginBottom: '28px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#7e22ce', borderLeft: '4px solid #a855f7', paddingLeft: '12px' }}>Tone of Voice</h3>
+                <p style={{ fontSize: '16px', lineHeight: '1.6', fontStyle: 'italic', backgroundColor: '#f8fafc', padding: '16px', borderRadius: '8px' }}>{aiResponse.toneGuide}</p>
+              </div>
+
+              <div style={{ marginBottom: '28px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#7e22ce', borderLeft: '4px solid #a855f7', paddingLeft: '12px' }}>Recommended Channels</h3>
+                {aiResponse.channels?.map((ch, i) => (
+                  <div key={i} style={{ marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{ch.name}</span>
+                      <span style={{ fontSize: '14px' }}>{ch.percentage}%</span>
+                    </div>
+                    <div style={{ height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px' }}>
+                      <div style={{ height: '8px', width: `${ch.percentage}%`, backgroundColor: '#7e22ce', borderRadius: '4px' }}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#7e22ce', borderLeft: '4px solid #a855f7', paddingLeft: '12px' }}>Key Visual Direction</h3>
+                <p style={{ fontSize: '16px', lineHeight: '1.6', backgroundColor: '#f8fafc', padding: '24px', borderRadius: '8px', fontStyle: 'italic' }}>{aiResponse.visual}</p>
+              </div>
+            </div>
+
             <button onClick={exportPDF} className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl flex justify-center items-center text-lg font-bold shadow-xl transition-all hover:-translate-y-1">
-              <Download className="mr-2" size={24} /> Download Presentation PDF
+              <Download className="mr-2" size={24} /> Download PDF
             </button>
           </div>
         )}

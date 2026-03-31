@@ -3,16 +3,46 @@
     "impressions": "2.4M",
     "clicks": "48K",
     "ctr": "2.0%",
-    "spend": "$32,450"
+    "conversions": "1,200",
+    "spend": "$32,450",
+    "roas": "3.5x"
   },
   "chartData": [
-    { "name": "Mon", "clicks": 4000, "impressions": 2400 },
-    { "name": "Tue", "clicks": 3000, "impressions": 1398 },
-    { "name": "Wed", "clicks": 2000, "impressions": 9800 },
-    { "name": "Thu", "clicks": 2780, "impressions": 3908 },
-    { "name": "Fri", "clicks": 1890, "impressions": 4800 },
-    { "name": "Sat", "clicks": 2390, "impressions": 3800 },
-    { "name": "Sun", "clicks": 3490, "impressions": 4300 }
+    {
+      "name": "Mon",
+      "clicks": 4000,
+      "impressions": 2400
+    },
+    {
+      "name": "Tue",
+      "clicks": 3000,
+      "impressions": 1398
+    },
+    {
+      "name": "Wed",
+      "clicks": 2000,
+      "impressions": 9800
+    },
+    {
+      "name": "Thu",
+      "clicks": 2780,
+      "impressions": 3908
+    },
+    {
+      "name": "Fri",
+      "clicks": 1890,
+      "impressions": 4800
+    },
+    {
+      "name": "Sat",
+      "clicks": 2390,
+      "impressions": 3800
+    },
+    {
+      "name": "Sun",
+      "clicks": 3490,
+      "impressions": 4300
+    }
   ],
   "campaigns": [
     {

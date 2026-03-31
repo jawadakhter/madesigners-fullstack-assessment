@@ -1,0 +1,63 @@
+{
+  "kpis": {
+    "impressions": "2.4M",
+    "clicks": "48K",
+    "ctr": "2.0%",
+    "spend": "$32,450"
+  },
+  "chartData": [
+    { "name": "Mon", "clicks": 4000, "impressions": 2400 },
+    { "name": "Tue", "clicks": 3000, "impressions": 1398 },
+    { "name": "Wed", "clicks": 2000, "impressions": 9800 },
+    { "name": "Thu", "clicks": 2780, "impressions": 3908 },
+    { "name": "Fri", "clicks": 1890, "impressions": 4800 },
+    { "name": "Sat", "clicks": 2390, "impressions": 3800 },
+    { "name": "Sun", "clicks": 3490, "impressions": 4300 }
+  ],
+  "campaigns": [
+    {
+      "id": "0001",
+      "name": "Lumiere Summer Launch",
+      "client": "Lumiere Skincare",
+      "status": "Active",
+      "budget": 50000,
+      "spend": 32450,
+      "impressions": 2400000,
+      "clicks": 48000,
+      "conversions": 1200
+    },
+    {
+      "id": "0002",
+      "name": "Nike AirMax Push",
+      "client": "Nike Shoes",
+      "status": "Paused",
+      "budget": 120000,
+      "spend": 45000,
+      "impressions": 5100000,
+      "clicks": 95000,
+      "conversions": 3400
+    },
+    {
+      "id": "0003",
+      "name": "Tech Conference 2026",
+      "client": "FutureTech",
+      "status": "Completed",
+      "budget": 15000,
+      "spend": 15000,
+      "impressions": 850000,
+      "clicks": 12000,
+      "conversions": 450
+    },
+    {
+      "id": "0004",
+      "name": "Winter Jacket Promo",
+      "client": "NorthFace",
+      "status": "Active",
+      "budget": 80000,
+      "spend": 21000,
+      "impressions": 1200000,
+      "clicks": 28000,
+      "conversions": 800
+    }
+  ]
+}

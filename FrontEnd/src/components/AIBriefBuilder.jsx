@@ -27,7 +27,7 @@ export default function AIBriefBuilder() {
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-const submitToAI = async () => {
+  const submitToAI = async () => {
     setLoading(true);
     try {
       // 1. Backend ki AI API ko request bhejein
@@ -56,16 +56,16 @@ const submitToAI = async () => {
     } catch (error) {
       console.error("AI Generation Error:", error);
       alert("AI Brief Generate karne mein masla aya. Server check karein.");
-      
+
       // Fallback: Agar API fail ho jaye toh test ke liye temporary data dikha dein
       setAiResponse({
         title: `${formData.clientName} - Fallback Campaign Brief`,
         headlines: ["Connect. Engage. Grow.", "Innovation at your fingertips.", "The future is now."],
         toneGuide: "Professional and engaging (Fallback)",
         channels: [
-            {"name": "Facebook", "percentage": 50},
-            {"name": "Twitter", "percentage": 30},
-            {"name": "LinkedIn", "percentage": 20}
+          { "name": "Facebook", "percentage": 50 },
+          { "name": "Twitter", "percentage": 30 },
+          { "name": "LinkedIn", "percentage": 20 }
         ],
         visual: "A sleek, modern visualization representing connectivity. (Fallback)"
       });
@@ -94,14 +94,22 @@ const submitToAI = async () => {
         <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">AI Brief Generator</h2>
       </div>
 
-      {/* Step Indicator */}
+      {/* Step Indicator with Labels Added */}
       <div className="flex items-center justify-between mb-12 relative">
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-100 dark:bg-slate-800 z-0"></div>
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-blue-500 to-purple-500 z-0 transition-all duration-500"
+        <div className="absolute left-0 top-5 w-full h-1 bg-slate-100 dark:bg-slate-800 z-0"></div>
+        <div className="absolute left-0 top-5 h-1 bg-gradient-to-r from-blue-500 to-purple-500 z-0 transition-all duration-500"
           style={{ width: `${Math.min(((step - 1) / 3) * 100, 100)}%` }}></div>
-        {[1, 2, 3, 4].map((s) => (
-          <div key={s} className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm transition-all duration-300 ${step >= s ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-white dark:bg-slate-800 text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}>
-            {step > s ? <CheckCircle2 size={20} /> : s}
+        {[
+          { num: 1, label: 'Details' },
+          { num: 2, label: 'Objective' },
+          { num: 3, label: 'Creative' },
+          { num: 4, label: 'Review' }
+        ].map((s) => (
+          <div key={s.num} className="relative z-10 flex flex-col items-center gap-2">
+            <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold text-sm transition-all duration-300 ${step >= s.num ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' : 'bg-white dark:bg-slate-800 text-slate-400 border-2 border-slate-200 dark:border-slate-700'}`}>
+              {step > s.num ? <CheckCircle2 size={20} /> : s.num}
+            </div>
+            <span className={`text-xs font-bold ${step >= s.num ? 'text-slate-800 dark:text-white' : 'text-slate-400'}`}>{s.label}</span>
           </div>
         ))}
       </div>
@@ -113,16 +121,18 @@ const submitToAI = async () => {
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Client Details</h3>
             {[
-              { label: 'Client / Brand Name', name: 'clientName', placeholder: 'e.g. Lumiere Cosmetics' },
-              { label: 'Industry', name: 'industry', placeholder: 'e.g. Beauty & Skincare' },
-              { label: 'Website URL', name: 'website', placeholder: 'e.g. https://lumiere.com' },
-              { label: 'Key Competitors', name: 'competitors', placeholder: 'e.g. L\'Oreal, Olay, Neutrogena' },
+              { label: 'Client / Brand Name', name: 'clientName', placeholder: 'e.g. Lumiere Cosmetics', required: true },
+              { label: 'Industry', name: 'industry', placeholder: 'e.g. Beauty & Skincare', required: true },
+              { label: 'Website URL', name: 'website', placeholder: 'e.g. https://lumiere.com', required: false },
+              { label: 'Key Competitors', name: 'competitors', placeholder: 'e.g. L\'Oreal, Olay, Neutrogena', required: false },
             ].map(field => (
               <div key={field.name}>
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{field.label}</label>
                 <input type="text" name={field.name} value={formData[field.name]} onChange={handleChange}
                   className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all"
                   placeholder={field.placeholder} />
+                {/* Validation Error Message */}
+                {field.required && !formData[field.name] && <p className="text-red-500 text-xs mt-1">{field.label} is required</p>}
               </div>
             ))}
             <button onClick={() => setStep(2)} disabled={!formData.clientName || !formData.industry}
@@ -145,18 +155,21 @@ const submitToAI = async () => {
                 <option value="Consideration">Consideration / Traffic</option>
                 <option value="Conversion">Conversion / Sales</option>
               </select>
+              {!formData.objective && <p className="text-red-500 text-xs mt-1">Select a campaign objective</p>}
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Target Audience</label>
               <input type="text" name="targetAudience" value={formData.targetAudience} onChange={handleChange}
                 className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="e.g. Women 25-35, urban, health-conscious" />
+              {!formData.targetAudience && <p className="text-red-500 text-xs mt-1">Target Audience is required</p>}
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Campaign Budget ($)</label>
               <input type="text" name="budget" value={formData.budget} onChange={handleChange}
                 className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 placeholder="e.g. $50,000" />
+              {!formData.budget && <p className="text-red-500 text-xs mt-1">Budget is required</p>}
             </div>
             <div className="flex gap-4">
               <button onClick={() => setStep(1)} className="px-8 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-all">Back</button>
@@ -173,15 +186,16 @@ const submitToAI = async () => {
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Creative Direction</h3>
             {[
-              { label: 'Tone of Voice', name: 'tone', placeholder: 'e.g. Modern, playful, empowering' },
-              { label: 'Imagery Style', name: 'imageryStyle', placeholder: 'e.g. Minimalist product shots, lifestyle photography' },
-              { label: 'Color Direction', name: 'colorDirection', placeholder: 'e.g. Soft pastels, white and gold' },
+              { label: 'Tone of Voice', name: 'tone', placeholder: 'e.g. Modern, playful, empowering', required: true },
+              { label: 'Imagery Style', name: 'imageryStyle', placeholder: 'e.g. Minimalist product shots, lifestyle photography', required: true },
+              { label: 'Color Direction', name: 'colorDirection', placeholder: 'e.g. Soft pastels, white and gold', required: true },
             ].map(field => (
               <div key={field.name}>
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{field.label}</label>
                 <input type="text" name={field.name} value={formData[field.name]} onChange={handleChange}
                   className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-white outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                   placeholder={field.placeholder} />
+                {field.required && !formData[field.name] && <p className="text-red-500 text-xs mt-1">{field.label} is required</p>}
               </div>
             ))}
             <div>
@@ -198,7 +212,11 @@ const submitToAI = async () => {
             </div>
             <div className="flex gap-4">
               <button onClick={() => setStep(2)} className="px-8 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl transition-all">Back</button>
-              <button onClick={() => setStep(4)} className="px-8 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl transition-all">Review Info</button>
+              <button onClick={() => setStep(4)}
+                disabled={!formData.tone || !formData.imageryStyle || !formData.colorDirection}
+                className="px-8 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl disabled:opacity-50 transition-all">
+                Review Info
+              </button>
             </div>
           </div>
         )}
@@ -225,7 +243,7 @@ const submitToAI = async () => {
               <button onClick={submitToAI} disabled={loading}
                 className="px-8 py-3.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl shadow-lg flex items-center gap-2 hover:scale-105 transition-all disabled:opacity-70">
                 {loading ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
-                {loading ? 'AI Soch raha hai...' : 'Generate Magic'}
+                {loading ? 'AI is thinking...' : 'Generate Magic'}
               </button>
             </div>
           </div>

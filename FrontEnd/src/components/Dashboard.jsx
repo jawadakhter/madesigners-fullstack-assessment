@@ -1,13 +1,13 @@
 // src/components/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
 import useDarkMode from '../hooks/useDarkMode';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { LayoutDashboard, PenTool, Sun, Moon, Menu, TrendingUp, MousePointerClick, Eye, DollarSign, Calendar, ShoppingCart, PieChart } from 'lucide-react';
 import mockData from '../data.json';
 import CampaignTable from './CampaignTable';
 import NotificationCenter from './NotificationCenter';
 
-export default function Dashboard({ setActiveTab }) {
+export default function Dashboard({ setActiveTab, onLogout }) {
     const [theme, toggleTheme] = useDarkMode();
     const [dateRange, setDateRange] = useState("30d");
     const [customDates, setCustomDates] = useState({ start: '', end: '' }); // Custom Date State
@@ -19,15 +19,18 @@ export default function Dashboard({ setActiveTab }) {
             try {
                 // Backend API se campaigns fetch kar rahe hain
                 // Note: Agar JWT token required hai, toh headers mein 'Authorization': `Bearer ${token}` bhejna hoga
-                const response = await fetch('http://localhost:5000/campaigns'); 
-                
+                const token = localStorage.getItem('token');
+                const response = await fetch('http://localhost:5000/campaigns', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
                 if (response.ok) {
                     const dbCampaigns = await response.json();
-                    
+
                     // Chart ka data JSON se aur Campaigns DB se combine kar rahe hain
                     setData({
-                        chartData: mockData.chartData, 
-                        campaigns: dbCampaigns 
+                        chartData: mockData.chartData,
+                        campaigns: dbCampaigns
                     });
                 } else {
                     console.log("Failed to fetch from DB, using mock data");
@@ -45,12 +48,12 @@ export default function Dashboard({ setActiveTab }) {
     if (!data) return <div className="flex items-center justify-center h-screen dark:text-white">Loading Dashboard...</div>;
 
     // --- FILTERING LOGIC ---
-    
+
     // 1. Chart Data Filter
     const getFilteredChartData = () => {
         if (!data || !data.chartData) return [];
         const allData = data.chartData;
-        
+
         if (dateRange === "7d") return allData.slice(-7); // Last 7 days
         if (dateRange === "30d") return allData; // All mock data (let's assume it represents 30 days)
         if (dateRange === "90d") {
@@ -59,7 +62,7 @@ export default function Dashboard({ setActiveTab }) {
         }
         if (dateRange === "custom") {
             // Agar custom hai, to sirf pehle 4 din dikha dete hain mockup ke liye (ya aap chahein to asli date comparison laga sakte hain agar JSON mein dates hon)
-            return allData.slice(0, 4); 
+            return allData.slice(0, 4);
         }
         return allData;
     };
@@ -77,7 +80,7 @@ export default function Dashboard({ setActiveTab }) {
         const filteredChart = getFilteredChartData();
         const totalClicks = filteredChart.reduce((sum, item) => sum + item.clicks, 0);
         const totalImpressions = filteredChart.reduce((sum, item) => sum + item.impressions, 0);
-        
+
         let spendStr = "$32,450"; let ctrStr = "2.0%"; let convStr = "1,200"; let roasStr = "3.5x";
         if (dateRange === "7d") { spendStr = "$8,100"; ctrStr = "2.5%"; convStr = "350"; roasStr = "4.2x"; }
         if (dateRange === "90d") { spendStr = "$95,000"; ctrStr = "1.8%"; convStr = "3,400"; roasStr = "2.8x"; }
@@ -111,67 +114,91 @@ export default function Dashboard({ setActiveTab }) {
     };
 
     return (
-        <div className="flex h-screen bg-slate-50 dark:bg-[#0f172a] transition-colors duration-300 font-sans selection:bg-blue-500 selection:text-white">
+      <div className="flex h-screen bg-slate-50 dark:bg-[#0f172a] transition-colors duration-300 font-sans selection:bg-blue-500 selection:text-white">
 
-            {/* Sidebar - Same as before */}
-            <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-r border-slate-200 dark:border-slate-800 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out`}>
-                <div className="p-8 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
-                        <TrendingUp className="text-white" size={18} />
-                    </div>
-                    <span className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">AdAgency.</span>
+
+ {/* Mobile Overlay */}
+        {sidebarOpen && (
+            <div 
+                className="fixed inset-0 bg-black/50 z-40 lg:hidden" 
+                onClick={() => setSidebarOpen(false)} 
+            />
+        )}
+
+
+           {/* Sidebar */}
+        <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-r border-slate-200 dark:border-slate-800 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col`}>
+                {/* Logo — Fixed */}
+            <div className="p-8 flex items-center gap-3 shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
+                    <TrendingUp className="text-white" size={18} />
                 </div>
+                <span className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">AdAgency.</span>
+            </div>
 
-               {/* Sidebar mein yeh nav replace karo */}
-<nav className="mt-4 px-4 space-y-1">
-  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-3 mb-3 mt-2">Main Menu</p>
-  
-  <button onClick={() => { setActiveTab('dashboard'); setSidebarOpen(false); }}
-    className="w-full flex items-center p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium transition-all">
-    <LayoutDashboard className="mr-3" size={20} /> Dashboard Overview
-  </button>
-  
-  <button onClick={() => { setActiveTab('builder'); setSidebarOpen(false); }}
-    className="w-full flex items-center p-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white font-medium transition-all">
-    <PenTool className="mr-3" size={20} /> AI Brief Builder
-  </button>
+               {/* Nav — Scrollable */}
+            <nav className="flex-1 overflow-y-auto px-4 space-y-1 pb-8">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-3 mb-3 mt-2">Main Menu</p>
 
-  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-3 mb-3 mt-6">Clients</p>
-  {['Lumiere Skincare', 'Nike Shoes', 'FutureTech', 'NorthFace'].map(client => (
-    <button key={client} className="w-full flex items-center p-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 font-medium text-sm transition-all">
-      <div className="w-2 h-2 rounded-full bg-blue-400 mr-3"></div> {client}
-    </button>
-  ))}
+                    <button onClick={() => { setActiveTab('dashboard'); setSidebarOpen(false); }}
+                        className="w-full flex items-center p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium transition-all">
+                        <LayoutDashboard className="mr-3" size={20} /> Dashboard Overview
+                    </button>
 
-  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-3 mb-3 mt-6">Settings</p>
-  <button className="w-full flex items-center p-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 font-medium transition-all">
-    <span className="mr-3 text-lg" style={{fontSize:'16px'}}>⚙</span> Preferences
-  </button>
-</nav>
+                    <button onClick={() => { setActiveTab('builder'); setSidebarOpen(false); }}
+                        className="w-full flex items-center p-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white font-medium transition-all">
+                        <PenTool className="mr-3" size={20} /> AI Brief Builder
+                    </button>
+
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-3 mb-3 mt-6">Clients</p>
+                    {['Lumiere Skincare', 'Nike Shoes', 'FutureTech', 'NorthFace'].map(client => (
+                        <button key={client} className="w-full flex items-center p-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 font-medium text-sm transition-all">
+                            <div className="w-2 h-2 rounded-full bg-blue-400 mr-3"></div> {client}
+                        </button>
+                    ))}
+
+                    {/* Yeh code sidebar mein "Clients" section ke BAAD add karo */}
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-3 mb-3 mt-6">Campaigns</p>
+                    {data?.campaigns?.map(campaign => (
+                        <button key={campaign.id} className="w-full flex items-center p-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 font-medium text-sm transition-all">
+                            <div className={`w-2 h-2 rounded-full mr-3 ${campaign.status === 'Active' ? 'bg-green-400' : campaign.status === 'Paused' ? 'bg-yellow-400' : 'bg-gray-400'}`}></div>
+                            {campaign.name}
+                        </button>
+                    ))}
+
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest px-3 mb-3 mt-6">Settings</p>
+                    <button className="w-full flex items-center p-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 font-medium transition-all">
+                        <span className="mr-3 text-lg" style={{ fontSize: '16px' }}>⚙</span> Preferences
+                    </button>
+                </nav>
             </aside>
 
             {/* Main Content */}
             <div className="flex-1 lg:ml-72 flex flex-col h-screen overflow-y-auto">
-              
-                {/* Topbar */}
-<header className="sticky top-0 z-40 flex items-center justify-between p-4 lg:px-10 bg-white/60 dark:bg-[#0f172a]/60 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
-    <button className="lg:hidden p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm text-slate-700 dark:text-slate-300" onClick={() => setSidebarOpen(!sidebarOpen)}>
-        <Menu size={24} />
-    </button>
-    <div className="flex-1"></div>
 
-    {/* YAHAN NOTIFICATION CENTER AUR THEME BUTTON KO EK SATH RAKHEIN */}
-    <div className="flex items-center gap-4">
-        <NotificationCenter />
-        <button onClick={toggleTheme} className="p-2.5 rounded-xl bg-white dark:bg-slate-800 shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-yellow-400 transition-all">
-            {theme === "light" ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
-    </div>
-</header>
+                {/* Topbar */}
+                <header className="sticky top-0 z-40 flex items-center justify-between p-4 lg:px-10 bg-white/60 dark:bg-[#0f172a]/60 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+                    <button className="lg:hidden p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm text-slate-700 dark:text-slate-300" onClick={() => setSidebarOpen(!sidebarOpen)}>
+                        <Menu size={24} />
+                    </button>
+                    <div className="flex-1"></div>
+
+                    {/* YAHAN NOTIFICATION CENTER AUR THEME BUTTON KO EK SATH RAKHEIN */}
+                    <div className="flex items-center gap-4">
+                        <NotificationCenter />
+                        <button onClick={toggleTheme} className="p-2.5 rounded-xl bg-white dark:bg-slate-800 shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-yellow-400 transition-all">
+                            {theme === "light" ? <Sun size={20} /> : <Moon size={20} />}
+                        </button>
+                        {/* NAYA — Logout Button */}
+                        <button onClick={onLogout} className="px-4 py-2.5 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-sm font-bold border border-red-200 dark:border-red-500/20 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all">
+                            Logout
+                        </button>
+                    </div>
+                </header>
 
                 {/* Dashboard Content */}
                 <main className="p-6 lg:p-10 max-w-7xl mx-auto w-full">
-                    
+
                     {/* Header & Filter Section */}
                     <div className="mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                         <div>
@@ -180,13 +207,13 @@ export default function Dashboard({ setActiveTab }) {
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-3 items-end sm:items-center">
-                            
+
                             {/* NAYA: Custom Date Inputs (Sirf tab dikhenge jab "custom" select ho) */}
                             {dateRange === 'custom' && (
                                 <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-300">
-                                    <input type="date" value={customDates.start} onChange={(e) => setCustomDates({...customDates, start: e.target.value})} className="p-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500" />
+                                    <input type="date" value={customDates.start} onChange={(e) => setCustomDates({ ...customDates, start: e.target.value })} className="p-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500" />
                                     <span className="text-slate-400">-</span>
-                                    <input type="date" value={customDates.end} onChange={(e) => setCustomDates({...customDates, end: e.target.value})} className="p-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500" />
+                                    <input type="date" value={customDates.end} onChange={(e) => setCustomDates({ ...customDates, end: e.target.value })} className="p-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-blue-500" />
                                 </div>
                             )}
 
@@ -222,14 +249,14 @@ export default function Dashboard({ setActiveTab }) {
                         ))}
                     </div>
 
-                    {/* Area Chart - Baki same hai */}
+                    {/* Line Chart - Baki same hai */}
                     <div className="bg-white dark:bg-slate-800/50 p-6 lg:p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold text-slate-900 dark:text-white">Engagement Trends</h2>
                         </div>
                         <div className="h-[400px] w-full">
-                            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} aspect={3}>
-                                <AreaChart data={getFilteredChartData()} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={getFilteredChartData()} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
@@ -247,9 +274,9 @@ export default function Dashboard({ setActiveTab }) {
                                         contentStyle={{ backgroundColor: theme === 'dark' ? '#1e293b' : '#ffffff', borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
                                         itemStyle={{ fontWeight: 'bold' }}
                                     />
-                                    <Area type="monotone" dataKey="impressions" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#colorImp)" />
-                                    <Area type="monotone" dataKey="clicks" stroke="#3B82F6" strokeWidth={3} fillOpacity={1} fill="url(#colorClicks)" />
-                                </AreaChart>
+                                    <Line type="monotone" dataKey="impressions" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#colorImp)" />
+                                    <Line type="monotone" dataKey="clicks" stroke="#3B82F6" strokeWidth={3} fillOpacity={1} fill="url(#colorClicks)" />
+                                </LineChart>
                             </ResponsiveContainer>
                         </div>
                     </div>

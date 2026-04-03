@@ -72,6 +72,16 @@ export default function CampaignTable({ campaigns }) {
               <th className="p-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" onClick={() => requestSort('status')}>
                 <div className="flex items-center gap-2">Status <ArrowUpDown size={14} /></div>
               </th>
+              {/* Naye Columns Headers */}
+              <th className="p-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-right" onClick={() => requestSort('impressions')}>
+                <div className="flex items-center justify-end gap-2">Impressions <ArrowUpDown size={14} /></div>
+              </th>
+              <th className="p-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-right" onClick={() => requestSort('clicks')}>
+                <div className="flex items-center justify-end gap-2">Clicks <ArrowUpDown size={14} /></div>
+              </th>
+              <th className="p-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-right" onClick={() => requestSort('conversions')}>
+                <div className="flex items-center justify-end gap-2">Conversions <ArrowUpDown size={14} /></div>
+              </th>
               <th className="p-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-right" onClick={() => requestSort('spend')}>
                 <div className="flex items-center justify-end gap-2">Spend / Budget <ArrowUpDown size={14} /></div>
               </th>
@@ -85,6 +95,10 @@ export default function CampaignTable({ campaigns }) {
                 <td className="p-4">
                   <span className={getStatusBadge(camp.status)}>{camp.status}</span>
                 </td>
+                {/* Naye Columns Data */}
+                <td className="p-4 text-right text-sm">{camp.impressions?.toLocaleString()}</td>
+                <td className="p-4 text-right text-sm">{camp.clicks?.toLocaleString()}</td>
+                <td className="p-4 text-right text-sm">{camp.conversions?.toLocaleString()}</td>
                 <td className="p-4 text-right">
                   <div className="font-semibold text-slate-900 dark:text-white">${camp.spend.toLocaleString()}</div>
                   <div className="text-xs text-slate-400">of ${camp.budget.toLocaleString()}</div>
@@ -93,7 +107,7 @@ export default function CampaignTable({ campaigns }) {
             ))}
             {sortedCampaigns.length === 0 && (
               <tr>
-                <td colSpan="4" className="p-8 text-center text-slate-500">No campaigns found matching "{searchTerm}"</td>
+                <td colSpan="7" className="p-8 text-center text-slate-500">No campaigns found matching "{searchTerm}"</td>
               </tr>
             )}
           </tbody>

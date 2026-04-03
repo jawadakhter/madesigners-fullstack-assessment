@@ -9,39 +9,154 @@
   },
   "chartData": [
     {
-      "name": "Mon",
+      "name": "Day 1",
       "clicks": 4000,
-      "impressions": 2400
+      "impressions": 12400
     },
     {
-      "name": "Tue",
+      "name": "Day 2",
       "clicks": 3000,
-      "impressions": 1398
+      "impressions": 11398
     },
     {
-      "name": "Wed",
+      "name": "Day 3",
       "clicks": 2000,
       "impressions": 9800
     },
     {
-      "name": "Thu",
+      "name": "Day 4",
       "clicks": 2780,
-      "impressions": 3908
+      "impressions": 13908
     },
     {
-      "name": "Fri",
+      "name": "Day 5",
       "clicks": 1890,
-      "impressions": 4800
+      "impressions": 14800
     },
     {
-      "name": "Sat",
+      "name": "Day 6",
       "clicks": 2390,
-      "impressions": 3800
+      "impressions": 13800
     },
     {
-      "name": "Sun",
+      "name": "Day 7",
       "clicks": 3490,
-      "impressions": 4300
+      "impressions": 14300
+    },
+    {
+      "name": "Day 8",
+      "clicks": 3200,
+      "impressions": 12100
+    },
+    {
+      "name": "Day 9",
+      "clicks": 2800,
+      "impressions": 11500
+    },
+    {
+      "name": "Day 10",
+      "clicks": 3600,
+      "impressions": 15200
+    },
+    {
+      "name": "Day 11",
+      "clicks": 4100,
+      "impressions": 16800
+    },
+    {
+      "name": "Day 12",
+      "clicks": 3900,
+      "impressions": 15500
+    },
+    {
+      "name": "Day 13",
+      "clicks": 3100,
+      "impressions": 13200
+    },
+    {
+      "name": "Day 14",
+      "clicks": 2700,
+      "impressions": 11800
+    },
+    {
+      "name": "Day 15",
+      "clicks": 3300,
+      "impressions": 14600
+    },
+    {
+      "name": "Day 16",
+      "clicks": 4200,
+      "impressions": 17200
+    },
+    {
+      "name": "Day 17",
+      "clicks": 4500,
+      "impressions": 18100
+    },
+    {
+      "name": "Day 18",
+      "clicks": 3800,
+      "impressions": 15900
+    },
+    {
+      "name": "Day 19",
+      "clicks": 3400,
+      "impressions": 14100
+    },
+    {
+      "name": "Day 20",
+      "clicks": 2900,
+      "impressions": 12700
+    },
+    {
+      "name": "Day 21",
+      "clicks": 3700,
+      "impressions": 16300
+    },
+    {
+      "name": "Day 22",
+      "clicks": 4300,
+      "impressions": 17800
+    },
+    {
+      "name": "Day 23",
+      "clicks": 4600,
+      "impressions": 19200
+    },
+    {
+      "name": "Day 24",
+      "clicks": 4100,
+      "impressions": 16500
+    },
+    {
+      "name": "Day 25",
+      "clicks": 3500,
+      "impressions": 14800
+    },
+    {
+      "name": "Day 26",
+      "clicks": 3000,
+      "impressions": 13100
+    },
+    {
+      "name": "Day 27",
+      "clicks": 3800,
+      "impressions": 15600
+    },
+    {
+      "name": "Day 28",
+      "clicks": 4400,
+      "impressions": 18500
+    },
+    {
+      "name": "Day 29",
+      "clicks": 4700,
+      "impressions": 19800
+    },
+    {
+      "name": "Day 30",
+      "clicks": 5100,
+      "impressions": 21000
     }
   ],
   "campaigns": [

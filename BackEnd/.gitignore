@@ -1,0 +1,20 @@
+# Dependencies (Yeh folder bohat heavy hota hai aur github pe nahi jata)
+node_modules/
+
+# Environment Variables (Isme aapke database passwords waghera hote hain)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db

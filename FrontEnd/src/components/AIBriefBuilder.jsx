@@ -27,24 +27,52 @@ export default function AIBriefBuilder() {
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const submitToAI = async () => {
+const submitToAI = async () => {
     setLoading(true);
-    // Jab backend ready hoga, hum yahan 'http://localhost:5000/api/generate' call karenge
-    setTimeout(() => {
-      setAiResponse({
-        title: `${formData.clientName} - AI Strategic Campaign Brief`,
-        headlines: ["Ignite Your Brand's Potential", "Smart Advertising, Real Results", "Connect with Your Audience Today"],
-        toneGuide: "Professional, engaging, and forward-thinking.",
-        channels: [
-            {"name": "Instagram", "percentage": 40},
-            {"name": "Google Ads", "percentage": 35},
-            {"name": "YouTube", "percentage": 25}
-        ],
-        visual: "A high-contrast cinematic shot showing a diverse group of young professionals interacting with a glowing digital interface, representing forward-thinking technology."
+    try {
+      // 1. Backend ki AI API ko request bhejein
+      // Agar backend par JWT authentication lazmi hai toh headers mein token add karna parre ga.
+      const token = localStorage.getItem('token'); // Misaal ke tor par, agar aapne token save kiya hai
+
+      const response = await fetch('http://localhost:5000/api/ai/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // 'Authorization': `Bearer ${token}` // Agar API token mangti hai toh isay uncomment karein
+        },
+        body: JSON.stringify(formData) // Form ka data backend ko bhej rahe hain
       });
-      setLoading(false);
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // 2. AI ka response set karein aur aagay wale step par jayen
+      setAiResponse(data);
       setStep(5);
-    }, 2500);
+
+    } catch (error) {
+      console.error("AI Generation Error:", error);
+      alert("AI Brief Generate karne mein masla aya. Server check karein.");
+      
+      // Fallback: Agar API fail ho jaye toh test ke liye temporary data dikha dein
+      setAiResponse({
+        title: `${formData.clientName} - Fallback Campaign Brief`,
+        headlines: ["Connect. Engage. Grow.", "Innovation at your fingertips.", "The future is now."],
+        toneGuide: "Professional and engaging (Fallback)",
+        channels: [
+            {"name": "Facebook", "percentage": 50},
+            {"name": "Twitter", "percentage": 30},
+            {"name": "LinkedIn", "percentage": 20}
+        ],
+        visual: "A sleek, modern visualization representing connectivity. (Fallback)"
+      });
+      setStep(5);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const exportPDF = () => {

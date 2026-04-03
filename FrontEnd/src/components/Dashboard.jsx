@@ -5,6 +5,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { LayoutDashboard, PenTool, Sun, Moon, Menu, TrendingUp, MousePointerClick, Eye, DollarSign, Calendar, ShoppingCart, PieChart } from 'lucide-react';
 import mockData from '../data.json';
 import CampaignTable from './CampaignTable';
+import NotificationCenter from './NotificationCenter';
 
 export default function Dashboard({ setActiveTab }) {
     const [theme, toggleTheme] = useDarkMode();
@@ -14,7 +15,31 @@ export default function Dashboard({ setActiveTab }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
-        setData(mockData);
+        const fetchDashboardData = async () => {
+            try {
+                // Backend API se campaigns fetch kar rahe hain
+                // Note: Agar JWT token required hai, toh headers mein 'Authorization': `Bearer ${token}` bhejna hoga
+                const response = await fetch('http://localhost:5000/campaigns'); 
+                
+                if (response.ok) {
+                    const dbCampaigns = await response.json();
+                    
+                    // Chart ka data JSON se aur Campaigns DB se combine kar rahe hain
+                    setData({
+                        chartData: mockData.chartData, 
+                        campaigns: dbCampaigns 
+                    });
+                } else {
+                    console.log("Failed to fetch from DB, using mock data");
+                    setData(mockData); // Agar server error de toh mock data chal jaye
+                }
+            } catch (error) {
+                console.error("API connection error:", error);
+                setData(mockData); // Fallback
+            }
+        };
+
+        fetchDashboardData();
     }, []);
 
     if (!data) return <div className="flex items-center justify-center h-screen dark:text-white">Loading Dashboard...</div>;
@@ -127,16 +152,22 @@ export default function Dashboard({ setActiveTab }) {
 
             {/* Main Content */}
             <div className="flex-1 lg:ml-72 flex flex-col h-screen overflow-y-auto">
+              
                 {/* Topbar */}
-                <header className="sticky top-0 z-40 flex items-center justify-between p-4 lg:px-10 bg-white/60 dark:bg-[#0f172a]/60 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
-                    <button className="lg:hidden p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm text-slate-700 dark:text-slate-300" onClick={() => setSidebarOpen(!sidebarOpen)}>
-                        <Menu size={24} />
-                    </button>
-                    <div className="flex-1"></div>
-                    <button onClick={toggleTheme} className="p-2.5 rounded-xl bg-white dark:bg-slate-800 shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-yellow-400 transition-all">
-                        {theme === "light" ? <Sun size={20} /> : <Moon size={20} />}
-                    </button>
-                </header>
+<header className="sticky top-0 z-40 flex items-center justify-between p-4 lg:px-10 bg-white/60 dark:bg-[#0f172a]/60 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+    <button className="lg:hidden p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm text-slate-700 dark:text-slate-300" onClick={() => setSidebarOpen(!sidebarOpen)}>
+        <Menu size={24} />
+    </button>
+    <div className="flex-1"></div>
+
+    {/* YAHAN NOTIFICATION CENTER AUR THEME BUTTON KO EK SATH RAKHEIN */}
+    <div className="flex items-center gap-4">
+        <NotificationCenter />
+        <button onClick={toggleTheme} className="p-2.5 rounded-xl bg-white dark:bg-slate-800 shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-yellow-400 transition-all">
+            {theme === "light" ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+    </div>
+</header>
 
                 {/* Dashboard Content */}
                 <main className="p-6 lg:p-10 max-w-7xl mx-auto w-full">
@@ -197,7 +228,7 @@ export default function Dashboard({ setActiveTab }) {
                             <h2 className="text-xl font-bold text-slate-900 dark:text-white">Engagement Trends</h2>
                         </div>
                         <div className="h-[400px] w-full">
-                            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0} aspect={3}>
                                 <AreaChart data={getFilteredChartData()} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1">

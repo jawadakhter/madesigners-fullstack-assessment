@@ -13,38 +13,38 @@ A full-stack advertising campaign management platform built as a skills assessme
 
 ## 📂 Project Structure
 
-
+```text
 ├── BackEnd/
-│ ├── middleware/
-│ │ └── auth.js # JWT authentication middleware
-│ ├── routes/
-│ │ └── aiRoutes.js # AI microservice endpoints
-│ ├── db.js # PostgreSQL connection
-│ ├── server.js # Main Express server + Socket.io
-│ ├── schema.sql # Database tables & seed data
-│ ├── openapi.yaml # OpenAPI 3.0 specification
-│ ├── Dockerfile # Docker container config
-│ ├── docker-compose.yml # Multi-container setup
-│ ├── package.json
-│ └── .env # Environment variables (not in repo)
+│   ├── middleware/
+│   │   └── auth.js             # JWT authentication middleware
+│   ├── routes/
+│   │   └── aiRoutes.js         # AI microservice endpoints
+│   ├── db.js                   # PostgreSQL connection
+│   ├── server.js               # Main Express server + Socket.io
+│   ├── schema.sql              # Database tables & seed data
+│   ├── openapi.yaml            # OpenAPI 3.0 specification
+│   ├── Dockerfile              # Docker container config
+│   ├── docker-compose.yml      # Multi-container setup
+│   ├── package.json
+│   └── .env                    # Environment variables (not in repo)
 │
 ├── FrontEnd/
-│ ├── src/
-│ │ ├── components/
-│ │ │ ├── Dashboard.jsx # Main dashboard with KPIs, chart, table
-│ │ │ ├── CampaignTable.jsx # Sortable, filterable campaign table
-│ │ │ ├── AIBriefBuilder.jsx # Multi-step AI brief generator
-│ │ │ ├── NotificationCenter.jsx # Real-time bell icon + alerts
-│ │ │ └── LoginPage.jsx # JWT login page
-│ │ ├── hooks/
-│ │ │ └── useDarkMode.js # Dark mode custom hook
-│ │ ├── data.json # Mock data for charts & KPIs
-│ │ ├── App.jsx # Root component with routing
-│ │ └── main.jsx
-│ ├── package.json
-│ └── index.html
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Dashboard.jsx        # Main dashboard with KPIs, chart, table
+│   │   │   ├── CampaignTable.jsx    # Sortable, filterable campaign table
+│   │   │   ├── AIBriefBuilder.jsx   # Multi-step AI brief generator
+│   │   │   ├── NotificationCenter.jsx # Real-time bell icon + alerts
+│   │   │   └── LoginPage.jsx        # JWT login page
+│   │   ├── hooks/
+│   │   │   └── useDarkMode.js       # Dark mode custom hook
+│   │   ├── data.json                # Mock data for charts & KPIs
+│   │   ├── App.jsx                  # Root component with routing
+│   │   └── main.jsx
+│   ├── package.json
+│   └── index.html
 │
-└── README.md # You are here
+└── README.md                        # You are here
 
 
 

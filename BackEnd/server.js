@@ -17,7 +17,13 @@ const server = http.createServer(app); // Wrapped Express app in HTTP server
 
 // Socket.io Setup
 const io = new Server(server, {
-  cors: { origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] }
+    cors: {
+        origin: [
+            "http://localhost:5173",
+            process.env.FRONTEND_URL || "http://localhost:5173"
+        ],
+        methods: ["GET", "POST", "PUT", "DELETE"]
+    }
 });
 
 // Socket connection listener
@@ -26,7 +32,15 @@ io.on('connection', (socket) => {
 });
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+    origin: [
+        "http://localhost:5173",
+        "http://localhost:5174",
+        process.env.FRONTEND_URL || "http://localhost:5173"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
 
 // --- REQUEST/RESPONSE LOGGING MIDDLEWARE ---
 app.use((req, res, next) => {

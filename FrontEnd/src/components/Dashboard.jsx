@@ -20,7 +20,7 @@ export default function Dashboard({ setActiveTab, onLogout }) {
                 // Backend API se campaigns fetch kar rahe hain
                 // Note: Agar JWT token required hai, toh headers mein 'Authorization': `Bearer ${token}` bhejna hoga
                 const token = localStorage.getItem('token');
-                const response = await fetch('http://localhost:5000/campaigns', {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/campaigns`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 

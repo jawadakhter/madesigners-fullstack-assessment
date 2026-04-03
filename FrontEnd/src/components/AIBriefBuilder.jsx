@@ -34,7 +34,7 @@ export default function AIBriefBuilder() {
       // Agar backend par JWT authentication lazmi hai toh headers mein token add karna parre ga.
       const token = localStorage.getItem('token'); // Misaal ke tor par, agar aapne token save kiya hai
 
-      const response = await fetch('http://localhost:5000/api/ai/generate', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/ai/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

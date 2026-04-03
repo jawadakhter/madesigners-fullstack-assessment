@@ -8,13 +8,13 @@ export default function NotificationCenter() {
 
     useEffect(() => {
         // 1. Purani notifications database se mangwayen
-        fetch('http://localhost:5000/notifications')
+        fetch(`${import.meta.env.VITE_API_URL}/notifications`)
             .then(res => res.json())
             .then(data => setNotifications(data))
             .catch(err => console.error("Error fetching notifications", err));
 
         // 2. WebSocket Connect karein Real-Time alerts ke liye
-        const socket = io('http://localhost:5000');
+       const socket = io(import.meta.env.VITE_API_URL);
 
         socket.on('campaign_alert', (newAlert) => {
             setNotifications(prev => [newAlert, ...prev]);

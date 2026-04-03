@@ -17,10 +17,41 @@ router.get('/health', (req, res) => {
     res.json({ status: 'active', model: 'gpt-3.5-turbo' });
 });
 
-// POST /generate/copy - Ad copy generate karne ke liye [cite: 81]
+// POST /generate/copy - SSE STREAMING SUPPORT ADDED
 router.post('/generate/copy', async (req, res) => {
-    const { product, tone, platform, word_limit } = req.body;
+    const { product, tone, platform, word_limit, stream } = req.body;
     
+    // Agar client ne stream=true bheja toh SSE use karo
+    if (stream) {
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+
+        try {
+            const prompt = `Write an ad copy for ${product}. Tone: ${tone}. Platform: ${platform}. Max words: ${word_limit}. Format output strictly as JSON with keys: headline, body, cta.`;
+            
+            const response = await openai.chat.completions.create({
+                model: "gpt-3.5-turbo",
+                messages: [{ role: "user", content: prompt }],
+                stream: true,
+            });
+
+            for await (const chunk of response) {
+                const content = chunk.choices[0]?.delta?.content || "";
+                if (content) {
+                    res.write(`data: ${JSON.stringify({ text: content })}\n\n`);
+                }
+            }
+            res.write('data: [DONE]\n\n');
+            res.end();
+        } catch (error) {
+            res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
+            res.end();
+        }
+        return; // Early return for streaming
+    }
+
+    // Non-streaming (original code)
     try {
         const prompt = `Write an ad copy for ${product}. Tone: ${tone}. Platform: ${platform}. Max words: ${word_limit}. Format output strictly as JSON with keys: headline, body, cta.`;
         
@@ -29,7 +60,6 @@ router.post('/generate/copy', async (req, res) => {
             messages: [{ role: "user", content: prompt }],
         });
 
-        // Parse JSON string returned by AI
         const aiData = JSON.parse(response.choices[0].message.content);
         res.json(aiData);
     } catch (error) {
@@ -123,6 +153,38 @@ router.post('/generate', async (req, res) => {
         res.status(500).json({ error: "AI Generation failed", details: error.message });
     }
 });
+
+
+// POST /generate/stream (Server-Sent Events)
+router.post('/generate/stream', async (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    const { prompt } = req.body;
+
+    try {
+        const response = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [{ role: "user", content: prompt || "Generate a creative ad idea." }],
+            stream: true, // STREAMING ENABLED
+        });
+
+        for await (const chunk of response) {
+            const content = chunk.choices[0]?.delta?.content || "";
+            if (content) {
+                // SSE format require karta hai ke data 'data: ' se start ho aur '\n\n' par end ho
+                res.write(`data: ${JSON.stringify({ text: content })}\n\n`);
+            }
+        }
+        res.write('data: [DONE]\n\n');
+        res.end();
+    } catch (error) {
+        res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
+        res.end();
+    }
+});
+
 
 
 module.exports = router;

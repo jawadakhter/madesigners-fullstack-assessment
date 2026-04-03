@@ -2,27 +2,351 @@ openapi: 3.0.0
 info:
   title: Campaign Management API
   version: 1.0.0
+  description: REST API for managing advertising campaigns with JWT authentication.
 servers:
   - url: http://localhost:5000
+
 paths:
+  /auth/login:
+    post:
+      summary: User Login
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  example: admin@agency.com
+                password:
+                  type: string
+                  example: password123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        '401':
+          description: Invalid credentials
+
   /campaigns:
     get:
-      summary: Get all campaigns
+      summary: List all campaigns
+      tags: [Campaigns]
       security:
         - bearerAuth: []
+      parameters:
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [id, name, client, status, budget, spend, created_at]
+            default: id
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
       responses:
         '200':
           description: A list of campaigns
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Campaign'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
     post:
       summary: Create a new campaign
+      tags: [Campaigns]
       security:
         - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, client, budget]
+              properties:
+                name:
+                  type: string
+                  example: Summer Sale 2025
+                client:
+                  type: string
+                  example: Lumiere Skincare
+                status:
+                  type: string
+                  enum: [Active, Paused, Completed]
+                  default: Active
+                budget:
+                  type: number
+                  example: 50000
       responses:
         '201':
-          description: Created
+          description: Campaign created
+        '400':
+          description: Validation error
+
+  /campaigns/{id}:
+    get:
+      summary: Get single campaign
+      tags: [Campaigns]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Campaign details
+        '404':
+          description: Campaign not found
+
+    put:
+      summary: Update a campaign
+      tags: [Campaigns]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                client:
+                  type: string
+                status:
+                  type: string
+                budget:
+                  type: number
+                spend:
+                  type: number
+                impressions:
+                  type: integer
+                clicks:
+                  type: integer
+                conversions:
+                  type: integer
+      responses:
+        '200':
+          description: Campaign updated
+        '404':
+          description: Campaign not found
+
+    delete:
+      summary: Soft delete a campaign
+      tags: [Campaigns]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Campaign soft deleted
+        '404':
+          description: Campaign not found
+
+  /notifications:
+    get:
+      summary: Get notification history
+      tags: [Notifications]
+      responses:
+        '200':
+          description: List of notifications
+
+  /api/ai/health:
+    get:
+      summary: AI service health check
+      tags: [AI Microservice]
+      responses:
+        '200':
+          description: Service status
+
+  /api/ai/generate/copy:
+    post:
+      summary: Generate ad copy
+      tags: [AI Microservice]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [product, tone, platform, word_limit]
+              properties:
+                product:
+                  type: string
+                tone:
+                  type: string
+                platform:
+                  type: string
+                word_limit:
+                  type: integer
+      responses:
+        '200':
+          description: Generated copy
+
+  /api/ai/generate/social:
+    post:
+      summary: Generate social media captions
+      tags: [AI Microservice]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [platform, campaign_goal, brand_voice]
+              properties:
+                platform:
+                  type: string
+                campaign_goal:
+                  type: string
+                brand_voice:
+                  type: string
+      responses:
+        '200':
+          description: 5 caption options
+
+  /api/ai/generate/hashtags:
+    post:
+      summary: Generate hashtags
+      tags: [AI Microservice]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content, industry]
+              properties:
+                content:
+                  type: string
+                industry:
+                  type: string
+      responses:
+        '200':
+          description: 10 hashtags
+
+  /api/ai/generate:
+    post:
+      summary: Generate creative brief from form data
+      tags: [AI Microservice]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                clientName:
+                  type: string
+                industry:
+                  type: string
+                website:
+                  type: string
+                competitors:
+                  type: string
+                objective:
+                  type: string
+                targetAudience:
+                  type: string
+                budget:
+                  type: string
+                tone:
+                  type: string
+                imageryStyle:
+                  type: string
+                colorDirection:
+                  type: string
+                dos:
+                  type: string
+                donts:
+                  type: string
+      responses:
+        '200':
+          description: AI-generated creative brief
+
+  /api/ai/generate/stream:
+    post:
+      summary: Stream generated copy via SSE
+      tags: [AI Microservice]
+      responses:
+        '200':
+          description: Server-Sent Events stream
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  schemas:
+    Campaign:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        client:
+          type: string
+        status:
+          type: string
+        budget:
+          type: number
+        spend:
+          type: number
+        impressions:
+          type: integer
+        clicks:
+          type: integer
+        conversions:
+          type: integer
+        deleted_at:
+          type: string
+          nullable: true
+        created_at:
+          type: string

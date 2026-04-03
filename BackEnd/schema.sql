@@ -20,7 +20,35 @@ CREATE TABLE campaigns (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+
+CREATE TABLE notifications (
+    id SERIAL PRIMARY KEY,
+    message TEXT NOT NULL,
+    campaign_id INT REFERENCES campaigns(id),
+    is_read BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Dummy User For Login
 -- Password is 'password123' hashed with bcrypt
 INSERT INTO users (email, password) 
 VALUES ('admin@agency.com', '$2a$10$wY.D9U.N8w8M5G8HqK0c..2iXj2.QvB/6U6l2oB9Xy2yUo5E2XG');
+
+
+-- Alert Rules Table (Configurable thresholds per campaign)
+CREATE TABLE alert_rules (
+    id SERIAL PRIMARY KEY,
+    campaign_id INT REFERENCES campaigns(id),
+    metric VARCHAR(50) NOT NULL,
+    operator VARCHAR(10) NOT NULL,
+    threshold NUMERIC NOT NULL,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Default Alert Rules
+INSERT INTO alert_rules (campaign_id, metric, operator, threshold) VALUES
+(1, 'spend_percentage', '>', 90),
+(1, 'ctr', '<', 1),
+(2, 'spend_percentage', '>', 90),
+(2, 'ctr', '<', 1);

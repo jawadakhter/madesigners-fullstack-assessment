@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const db = require('./db');
+const { v4: uuidv4 } = require('uuid');
 const authenticateJWT = require('./middleware/auth');
 const aiRoutes = require('./routes/aiRoutes'); // AI routes import
 
@@ -26,11 +27,25 @@ io.on('connection', (socket) => {
 
 // Middlewares
 app.use(cors());
+
+// --- REQUEST/RESPONSE LOGGING MIDDLEWARE ---
+app.use((req, res, next) => {
+  req.id = uuidv4(); // Unique Request ID
+  const start = Date.now();
+  console.log(`[Req: ${req.id}] INCOMING: ${req.method} ${req.originalUrl}`);
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`[Req: ${req.id}] OUTGOING: ${req.method} ${req.originalUrl} | Status: ${res.statusCode} | Time: ${duration}ms`);
+  });
+  next();
+});
+
 app.use(express.json());
 
 // Rate Limiting: max 100 requests per minute per IP
 const limiter = rateLimit({
-  windowMs: 1 * 60 * 1000, 
+  windowMs: 1 * 60 * 1000,
   max: 100,
   message: "Too many requests from this IP, please try again after a minute"
 });
@@ -44,7 +59,7 @@ app.use('/api/ai', aiRoutes);
 // ==========================================
 app.post('/auth/login', async (req, res) => {
   const { email, password } = req.body;
-  
+
   if (!email || !password) {
     return res.status(400).json({ error: "Email and password are required" });
   }
@@ -70,14 +85,42 @@ app.post('/auth/login', async (req, res) => {
 // ==========================================
 
 // GET /campaigns - List all
-app.get('/campaigns', async (req, res) => {
+// GET /campaigns - List all (UPDATED with filter)
+app.get('/campaigns', authenticateJWT, async (req, res) => {
   try {
-    const { sort = 'id', order = 'asc', limit = 10, page = 1 } = req.query;
+    const allowedSortFields = ['id', 'name', 'client', 'status', 'budget', 'spend', 'created_at'];
+    const allowedOrder = ['asc', 'desc'];
+    const allowedStatuses = ['Active', 'Paused', 'Completed'];
+
+    let { sort = 'id', order = 'asc', limit = 10, page = 1, status, client } = req.query;
+
+    if (!allowedSortFields.includes(sort)) sort = 'id';
+    if (!allowedOrder.includes(order.toLowerCase())) order = 'asc';
+
+    limit = Math.min(Math.max(parseInt(limit) || 10, 1), 100);
+    page = Math.max(parseInt(page) || 1, 1);
     const offset = (page - 1) * limit;
 
+    // Dynamic WHERE clause for filtering
+    let conditions = ['deleted_at IS NULL'];
+    let params = [];
+    let paramIndex = 1;
+
+    if (status && allowedStatuses.includes(status)) {
+      conditions.push(`status = $${paramIndex++}`);
+      params.push(status);
+    }
+    if (client) {
+      conditions.push(`client ILIKE $${paramIndex++}`);
+      params.push(`%${client}%`);
+    }
+
+    const whereClause = conditions.join(' AND ');
+    params.push(limit, offset);
+
     const result = await db.query(
-      `SELECT * FROM campaigns WHERE deleted_at IS NULL ORDER BY ${sort} ${order} LIMIT $1 OFFSET $2`,
-      [limit, offset]
+      `SELECT * FROM campaigns WHERE ${whereClause} ORDER BY ${sort} ${order} LIMIT $${paramIndex++} OFFSET $${paramIndex}`,
+      params
     );
     res.json(result.rows);
   } catch (err) {
@@ -90,7 +133,7 @@ app.get('/campaigns/:id', authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await db.query('SELECT * FROM campaigns WHERE id = $1 AND deleted_at IS NULL', [id]);
-    
+
     if (result.rows.length === 0) return res.status(404).json({ error: "Campaign not found" });
     res.json(result.rows[0]);
   } catch (err) {
@@ -101,15 +144,24 @@ app.get('/campaigns/:id', authenticateJWT, async (req, res) => {
 // POST /campaigns - Create new
 app.post('/campaigns', authenticateJWT, async (req, res) => {
   const { name, client, status, budget } = req.body;
-  
-  if (!name || !client || !budget) {
-    return res.status(400).json({ error: "Name, client, and budget are required fields." });
+
+  if (!name || typeof name !== 'string' || name.trim().length === 0) {
+    return res.status(400).json({ error: "Campaign name is required and must be a valid string" });
   }
+  if (!client || typeof client !== 'string') {
+    return res.status(400).json({ error: "Client name is required" });
+  }
+  if (!budget || isNaN(budget) || budget <= 0) {
+    return res.status(400).json({ error: "Budget must be a positive number" });
+  }
+
+  const allowedStatuses = ['Active', 'Paused', 'Completed'];
+  const campaignStatus = status && allowedStatuses.includes(status) ? status : 'Active';
 
   try {
     const result = await db.query(
       'INSERT INTO campaigns (name, client, status, budget) VALUES ($1, $2, $3, $4) RETURNING *',
-      [name, client, status || 'Active', budget]
+      [name, client, campaignStatus, budget]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -121,6 +173,24 @@ app.post('/campaigns', authenticateJWT, async (req, res) => {
 app.put('/campaigns/:id', authenticateJWT, async (req, res) => {
   const { id } = req.params;
   const { name, client, status, budget, spend, impressions, clicks, conversions } = req.body;
+
+  // --- VALIDATION ---
+  if (name !== undefined && (typeof name !== 'string' || name.trim().length === 0)) {
+    return res.status(400).json({ error: "Name must be a valid non-empty string" });
+  }
+  if (budget !== undefined && (isNaN(budget) || budget <= 0)) {
+    return res.status(400).json({ error: "Budget must be a positive number" });
+  }
+  if (spend !== undefined && (isNaN(spend) || spend < 0)) {
+    return res.status(400).json({ error: "Spend must be a non-negative number" });
+  }
+  if (status !== undefined) {
+    const allowedStatuses = ['Active', 'Paused', 'Completed'];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ error: "Status must be Active, Paused, or Completed" });
+    }
+  }
+  // --- VALIDATION END ---
 
   try {
     const result = await db.query(
@@ -137,23 +207,53 @@ app.put('/campaigns/:id', authenticateJWT, async (req, res) => {
       [name, client, status, budget, spend, impressions, clicks, conversions, id]
     );
 
-    if (result.rows.length === 0) return res.status(404).json({ error: "Campaign not found" });
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Campaign not found" });
+    }
 
     const updatedCampaign = result.rows[0];
 
-    // Alert Engine Logic: Check if spend > 90% of budget
+    // ========== ALERT ENGINE — Budget 90% Check ==========
     if (updatedCampaign.spend && updatedCampaign.budget) {
-        const spendPercentage = (updatedCampaign.spend / updatedCampaign.budget) * 100;
-        if (spendPercentage > 90) {
-            io.emit('campaign_alert', {
-                message: `Alert: Campaign "${updatedCampaign.name}" has used ${spendPercentage.toFixed(1)}% of its budget!`,
-                campaignId: updatedCampaign.id,
-                time: new Date()
-            });
-        }
+      const spendPercentage = (updatedCampaign.spend / updatedCampaign.budget) * 100;
+      if (spendPercentage > 90) {
+        const alertMsg = `⚠️ Budget Alert: Campaign "${updatedCampaign.name}" has used ${spendPercentage.toFixed(1)}% of its budget!`;
+        const notifResult = await db.query(
+          'INSERT INTO notifications (message, campaign_id) VALUES ($1, $2) RETURNING *',
+          [alertMsg, updatedCampaign.id]
+        );
+        io.emit('campaign_alert', notifResult.rows[0]);
+      }
+    }
+
+    // ========== ALERT ENGINE — CTR Below 1% Check ==========
+    if (updatedCampaign.clicks != null && updatedCampaign.impressions && updatedCampaign.impressions > 0) {
+      const ctr = (updatedCampaign.clicks / updatedCampaign.impressions) * 100;
+      if (ctr < 1) {
+        const alertMsg = `🔴 CTR Alert: Campaign "${updatedCampaign.name}" CTR dropped to ${ctr.toFixed(2)}% (below 1% threshold)!`;
+        const notifResult = await db.query(
+          'INSERT INTO notifications (message, campaign_id) VALUES ($1, $2) RETURNING *',
+          [alertMsg, updatedCampaign.id]
+        );
+        io.emit('campaign_alert', notifResult.rows[0]);
+      }
     }
 
     res.json(updatedCampaign);
+
+  } catch (err) {
+    console.error("PUT /campaigns/:id Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ==========================================
+// YEH NAYA ROUTE YAHAN BAHAR AAYEGA
+// ==========================================
+app.get('/notifications', async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM notifications ORDER BY created_at DESC LIMIT 20');
+    res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -161,6 +261,7 @@ app.put('/campaigns/:id', authenticateJWT, async (req, res) => {
 
 // DELETE /campaigns/:id - Soft Delete
 app.delete('/campaigns/:id', authenticateJWT, async (req, res) => {
+  // ... baqi code same rahega
   const { id } = req.params;
 
   try {

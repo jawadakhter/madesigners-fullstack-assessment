@@ -8,7 +8,8 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const db = require('./db');
-const { v4: uuidv4 } = require('uuid');
+// FIXED: uuid ki jagah crypto use kiya ha taake ESM ka error na aye
+const { randomUUID } = require('crypto');
 const authenticateJWT = require('./middleware/auth');
 const aiRoutes = require('./routes/aiRoutes'); // AI routes import
 
@@ -44,7 +45,7 @@ app.use(cors({
 
 // --- REQUEST/RESPONSE LOGGING MIDDLEWARE ---
 app.use((req, res, next) => {
-  req.id = uuidv4(); // Unique Request ID
+  req.id = randomUUID(); // FIXED: uuidv4() ki jagah randomUUID()
   const start = Date.now();
   console.log(`[Req: ${req.id}] INCOMING: ${req.method} ${req.originalUrl}`);
 

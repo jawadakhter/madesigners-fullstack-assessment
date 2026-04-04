@@ -102,6 +102,7 @@ AdAgency/
 │   │   └── main.jsx
 │   ├── package.json
 │   └── index.html
+│ 
 ├── Section3/ # Speed & Practical Tasks (30 pts)
 │   ├── Q1_bugfix.js # Debug Express API — 4 bugs fixed
 │   ├── Q2_useDebounce.js # React custom hook — 300ms debounce

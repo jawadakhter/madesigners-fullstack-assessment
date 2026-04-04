@@ -16,15 +16,18 @@ const aiRoutes = require('./routes/aiRoutes'); // AI routes import
 const app = express();
 const server = http.createServer(app); // Wrapped Express app in HTTP server
 
-// Socket.io Setup
+// 1. Socket.io Setup
 const io = new Server(server, {
-    cors: {
-        origin: [
-            "http://localhost:5173",
-            process.env.FRONTEND_URL || "http://localhost:5173"
-        ],
-        methods: ["GET", "POST", "PUT", "DELETE"]
-    }
+  cors: {
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://madesigners-fullstack-assessment.vercel.app", // <--- Yeh line add karein
+      process.env.FRONTEND_URL
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+  }
 });
 
 // Socket connection listener
@@ -32,15 +35,16 @@ io.on('connection', (socket) => {
   console.log(`User connected via WebSocket: ${socket.id}`);
 });
 
-// Middlewares
+// 2. Middlewares
 app.use(cors({
-    origin: [
-        "http://localhost:5173",
-        "http://localhost:5174",
-        process.env.FRONTEND_URL || "http://localhost:5173"
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://madesigners-fullstack-assessment.vercel.app", // <--- Aur yeh line yahan bhi add karein
+    process.env.FRONTEND_URL
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
 }));
 
 // --- REQUEST/RESPONSE LOGGING MIDDLEWARE ---

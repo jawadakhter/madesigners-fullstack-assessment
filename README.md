@@ -102,6 +102,12 @@ AdAgency/
 │   │   └── main.jsx
 │   ├── package.json
 │   └── index.html
+├── Section3/ # Speed & Practical Tasks (30 pts)
+│   ├── Q1_bugfix.js # Debug Express API — 4 bugs fixed
+│   ├── Q2_useDebounce.js # React custom hook — 300ms debounce
+│   ├── Q3_sql_query.sql # Top 5 campaigns by ROAS per client
+│   ├── Q4_optimized_component.jsx # React performance optimization
+│   └── Q5_crud_route.js # AI-scaffolded full CRUD route
 │
 └── README.md
 ```

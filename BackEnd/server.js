@@ -34,7 +34,8 @@ const io = new Server(server, {
 io.on('connection', (socket) => {
   console.log(`User connected via WebSocket: ${socket.id}`);
 });
-
+// Trust proxy — Railway/Vercel ke liye zaroori
+app.set('trust proxy', 1);
 // 2. Middlewares
 app.use(cors({
   origin: [
@@ -66,7 +67,8 @@ app.use(express.json());
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000,
   max: 100,
-  message: "Too many requests from this IP, please try again after a minute"
+  message: "Too many requests from this IP, please try again after a minute",
+  validate: { xForwardedForHeader: false }  // ← Yeh add karo
 });
 app.use(limiter);
 

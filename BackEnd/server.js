@@ -299,6 +299,6 @@ app.delete('/campaigns/:id', authenticateJWT, async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => { // <-- '0.0.0.0' zaroori ha Railway k liye
   console.log(`Server running on port ${PORT} with WebSockets`);
 });

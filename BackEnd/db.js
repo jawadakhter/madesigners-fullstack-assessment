@@ -18,6 +18,11 @@ if (process.env.DATABASE_URL) {
     });
 }
 
+// FIX: Neon DB jab connection drop kare toh app crash na ho!
+pool.on('error', (err, client) => {
+    console.error('❌ Unexpected error on idle database client', err.message);
+});
+
 pool.connect()
     .then(() => console.log("✅ PostgreSQL Database Successfully Connected!"))
     .catch(err => console.error("❌ Database Connection Error:", err));
